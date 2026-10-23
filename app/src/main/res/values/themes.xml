@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.EVCharge" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#EEF1F6</item>
+        <item name="android:navigationBarColor">#EEF1F6</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

@@ -1,0 +1,652 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>شحنات سيارتي</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: single phone-width column. Ink hero card on top, month navigation, content per tab, bottom tab bar (home, calendar, compare, settings), floating add button. */
+:root {
+  --hue: 222;
+  --bg: #EEF1F6;
+  --surface: #FFFFFF;
+  --fg: #0E1A2B;
+  --muted: #5B6B80;
+  --line: #D8DFE9;
+  --accent: hsl(var(--hue) 78% 42%);
+  --accent-ink: #FFFFFF;
+  --accent-soft: hsl(var(--hue) 80% 94%);
+  --hero: #0E1A2B;
+  --hero-ink: #F2F6FC;
+  --hero-dim: #9DB0CC;
+  --hero-accent: hsl(var(--hue) 95% 78%);
+  --charge: #E39B12;
+  --good: #13805A;
+  --bad: #C2410C;
+  --warn: #B4231B;
+  --font-display: "Cairo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Tajawal", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A101C; --surface: #121B2B; --fg: #E8EEF8; --muted: #8FA0B8; --line: #223049;
+    --accent: hsl(var(--hue) 92% 68%); --accent-ink: #0A101C; --accent-soft: hsl(var(--hue) 40% 20%);
+    --hero: #18253B; --hero-ink: #F2F6FC; --hero-dim: #9DB0CC; --hero-accent: hsl(var(--hue) 95% 78%);
+    --charge: #F5B73D; --good: #4ADE9E; --bad: #FB923C; --warn: #FF8A80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A101C; --surface: #121B2B; --fg: #E8EEF8; --muted: #8FA0B8; --line: #223049;
+  --accent: hsl(var(--hue) 92% 68%); --accent-ink: #0A101C; --accent-soft: hsl(var(--hue) 40% 20%);
+  --hero: #18253B; --hero-ink: #F2F6FC; --hero-dim: #9DB0CC; --hero-accent: hsl(var(--hue) 95% 78%);
+  --charge: #F5B73D; --good: #4ADE9E; --bad: #FB923C; --warn: #FF8A80;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-block: 14px 170px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 540px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+h1, h2, h3, .num { font-family: var(--font-display); }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.tn { font-variant-numeric: tabular-nums; }
+.ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.top h1 { font-size: 22px; font-weight: 800; line-height: 1.2; }
+.sub { color: var(--muted); font-size: 14px; }
+.iconbtn { width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; flex: none; }
+.iconbtn svg, .tab svg, .fab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.month { display: flex; align-items: center; gap: 8px; }
+.month .label { font-family: var(--font-display); font-weight: 800; font-size: 19px; text-align: center; flex: 1; }
+.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 14px; }
+.pill[aria-pressed="true"], .pill.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.scroll .pill { white-space: nowrap; }
+
+.hero { background: var(--hero); color: var(--hero-ink); border-radius: 26px; padding: 20px; display: grid; gap: 16px; }
+.hero .cap { font-size: 13px; color: var(--hero-dim); }
+.hero .big { font-size: 46px; font-weight: 800; line-height: 1.05; color: var(--hero-accent); }
+.hero .big small { font-size: 17px; font-weight: 600; color: var(--hero-ink); margin-inline-start: 6px; }
+.hero .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; border-top: 1px solid rgba(255,255,255,.14); padding-top: 14px; }
+.hero .mid { font-family: var(--font-display); font-weight: 800; font-size: 21px; line-height: 1.2; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 14px; display: grid; gap: 12px; }
+.card h3 { font-size: 16px; font-weight: 800; }
+.card.flat { padding: 0; border: 0; background: none; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+label.f { display: grid; gap: 4px; font-size: 14px; color: var(--muted); min-width: 0; }
+input[type=text], input[type=number], input[type=date], select {
+  font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 11px 10px; width: 100%; min-width: 0; min-height: 46px;
+}
+.result { background: var(--accent-soft); border-radius: 14px; padding: 12px; display: grid; gap: 4px; font-size: 15px; }
+.result b { font-family: var(--font-display); }
+.link { background: none; border: 0; color: var(--accent); padding: 4px 0; text-align: start; font-size: 14px; font-weight: 700; }
+
+.sess { text-align: start; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: grid; gap: 10px; }
+.sess .head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.sess .date { font-weight: 700; }
+.sess .cost { font-family: var(--font-display); font-weight: 800; font-size: 19px; color: var(--accent); white-space: nowrap; }
+.bar { position: relative; height: 12px; border-radius: 99px; background: var(--accent-soft); overflow: hidden; direction: ltr; }
+.bar i { position: absolute; top: 0; bottom: 0; background: var(--accent); border-radius: 99px; }
+.meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+.meta b { color: var(--fg); font-weight: 700; }
+.empty { text-align: center; color: var(--muted); padding: 26px 12px; border: 1px dashed var(--line); border-radius: 18px; }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px; text-align: center; min-width: 0; }
+.stat b { display: block; font-family: var(--font-display); font-size: 22px; font-weight: 800; line-height: 1.2; }
+.stat span { font-size: 12px; color: var(--muted); }
+
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal .wd { text-align: center; font-size: 12px; color: var(--muted); padding-bottom: 2px; }
+.day { aspect-ratio: 1 / 1.08; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 2px; min-width: 0; }
+.day .dn { font-weight: 700; font-size: 15px; line-height: 1.1; }
+.day small { font-size: 10px; color: var(--muted); line-height: 1; }
+.day .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--charge); }
+.day.has { border-color: var(--charge); }
+.day.today { box-shadow: inset 0 0 0 2px var(--accent); }
+.day.sel { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.day.sel small { color: var(--accent-ink); }
+.day.blank { border: 0; background: none; visibility: hidden; }
+.legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--charge); margin-inline-end: 6px; }
+
+table.cmp { width: 100%; border-collapse: collapse; font-size: 15px; }
+table.cmp th { font-size: 12px; color: var(--muted); font-weight: 500; text-align: start; padding: 4px 4px 8px; }
+table.cmp td { padding: 10px 4px; border-top: 1px solid var(--line); vertical-align: middle; }
+table.cmp td.n { font-weight: 700; }
+.delta { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.delta.good { color: var(--good); } .delta.bad { color: var(--bad); } .delta.neu { color: var(--muted); }
+.trend { display: grid; gap: 10px; }
+.tr { display: grid; grid-template-columns: 74px 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
+.tr .track { height: 14px; background: var(--accent-soft); border-radius: 99px; overflow: hidden; }
+.tr .track i { display: block; height: 100%; background: var(--accent); border-radius: 99px; opacity: .55; }
+.tr.cur .track i { opacity: 1; }
+.tr .val { text-align: end; min-width: 92px; }
+.tr .val div { font-weight: 700; }
+
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg button { border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+.swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+.sw { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--fg); }
+
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 14px; padding: 14px; font-weight: 700; font-size: 17px; width: 100%; text-align: center; display: block; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.ghost { background: none; color: var(--fg); border: 1px solid var(--line); }
+.btn.danger { background: none; color: var(--warn); border: 1px solid var(--warn); }
+.hint { color: var(--muted); font-size: 14px; margin: 0; }
+.err { color: var(--warn); font-size: 14px; min-height: 1.2em; }
+
+.fab { position: fixed; inset-inline: 0; margin: 0 auto; width: max-content; bottom: calc(82px + env(safe-area-inset-bottom, 0px)); z-index: 5;
+  background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 13px 24px; font-weight: 700; font-size: 17px; display: flex; gap: 8px; align-items: center; box-shadow: 0 8px 22px rgba(0,0,0,.28); }
+.tabs { position: fixed; inset-inline: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: center;
+  padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); }
+.tabs .in { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; max-width: 540px; gap: 4px; }
+.tab { background: none; border: 0; display: grid; justify-items: center; gap: 2px; padding: 6px 2px; border-radius: 14px; color: var(--muted); font-size: 12px; font-weight: 500; }
+.tab[aria-current="page"] { color: var(--accent); font-weight: 700; background: var(--accent-soft); }
+
+.scrim { position: fixed; inset: 0; background: rgba(5,10,20,.55); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--surface); width: 100%; max-width: 540px; border-radius: 26px 26px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px; max-height: 92%; overflow-y: auto; }
+.sheet h2 { font-size: 20px; font-weight: 800; }
+.preview { background: var(--accent-soft); border-radius: 14px; padding: 12px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.preview b { font-family: var(--font-display); font-size: 20px; }
+.toast { position: fixed; inset-inline: 0; margin: 0 auto; width: max-content; max-width: 90%; bottom: calc(142px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 12px; z-index: 30; font-size: 15px; }
+@media (prefers-reduced-motion: no-preference) { .tr .track i, .bar i { transition: width .3s; } }
+</style>
+<script>document.documentElement.setAttribute('dir', 'rtl'); document.documentElement.setAttribute('lang', 'ar');</script>
+
+<div class="wrap" id="app"></div>
+<div id="layer"></div>
+<div id="toast" class="toast" hidden></div>
+<nav id="tabs" class="tabs" hidden aria-label="التنقل"></nav>
+
+<script>
+(function () {
+  var KEYS = { car: 'evt.car', s: 'evt.sessions', odo: 'evt.odo', set: 'evt.settings' };
+  var MONTHS = ['كانون الثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حزيران', 'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول'];
+  var DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  var DAYS_S = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+  var PRESETS = [['Tesla', 'Model 3', 60], ['Tesla', 'Model Y', 75], ['BYD', 'Atto 3', 60.5], ['Hyundai', 'Ioniq 5', 72.6], ['Kia', 'EV6', 77.4], ['Nissan', 'Leaf', 40], ['MG', 'MG4', 64], ['Volkswagen', 'ID.4', 77]];
+  var HUES = [[222, 'أزرق'], [190, 'فيروزي'], [160, 'أخضر'], [265, 'بنفسجي'], [340, 'وردي'], [20, 'برتقالي']];
+  var memory = {};
+
+  function load(k, d) {
+    try { var v = localStorage.getItem(k); if (v) return JSON.parse(v); } catch (e) {}
+    return memory[k] !== undefined ? memory[k] : d;
+  }
+  function save(k, v) {
+    memory[k] = v;
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { toast('تعذر الحفظ الدائم في هذا المتصفح'); }
+  }
+
+  var car = load(KEYS.car, null);
+  var sessions = load(KEYS.s, []);
+  var odo = load(KEYS.odo, {});
+  var settings = load(KEYS.set, { hue: 222, theme: 'auto' });
+  var themeByUs = false;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function ym(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+  function ymd(d) { return ym(d) + '-' + pad(d.getDate()); }
+  function today() { return ymd(new Date()); }
+  function parseD(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12); }
+  function shift(m, d) { var p = m.split('-'); return ym(new Date(+p[0], +p[1] - 1 + d, 1)); }
+  function monthLabel(m) { var p = m.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; }
+  function monthShort(m) { var p = m.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0].slice(2); }
+  function daysBetween(a, b) { return Math.round((parseD(b) - parseD(a)) / 86400000); }
+  function fmt(n, d) { d = d === undefined ? 2 : d; return Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function num(v) { var n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; }
+  function $(id) { return document.getElementById(id); }
+  function isNum(v) { return typeof v === 'number' && isFinite(v); }
+
+  var state = { tab: car ? 'home' : 'setup', month: ym(new Date()), all: false, selDay: today(), cmpA: null, cmpB: null, metric: 'kwh', sheet: null };
+
+  var tt;
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(tt); tt = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+
+  function applySettings() {
+    document.documentElement.style.setProperty('--hue', settings.hue);
+    var r = document.documentElement;
+    if (settings.theme === 'light' || settings.theme === 'dark') { r.setAttribute('data-theme', settings.theme); themeByUs = true; }
+    else if (themeByUs) { r.removeAttribute('data-theme'); themeByUs = false; }
+  }
+
+  var IC = {
+    prev: '<polyline points="9 6 15 12 9 18"/>', next: '<polyline points="15 6 9 12 15 18"/>',
+    share: '<path d="M12 3v12"/><polyline points="7 8 12 3 17 8"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>',
+    home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+    cal: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>', bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>'
+  };
+  function svg(n) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + IC[n] + '</svg>'; }
+
+  // ---------- statistics ----------
+  function monthStats(m) {
+    var list = sessions.filter(function (s) { return s.date.slice(0, 7) === m; });
+    var kwh = 0, cost = 0, dset = {};
+    list.forEach(function (s) { kwh += s.kwh; cost += s.cost; dset[s.date] = 1; });
+    var o = odo[m] || {};
+    var km = (isNum(o.start) && isNum(o.end) && o.end >= o.start) ? o.end - o.start : null;
+    return build(m, list, kwh, cost, Object.keys(dset).length, km, km !== null ? kwh : 0);
+  }
+  function build(m, list, kwh, cost, days, km, kwhForKm) {
+    var ok = km !== null && km > 0 && kwhForKm > 0;
+    return { m: m, list: list, count: list.length, kwh: kwh, cost: cost, days: days, km: km,
+      per100: ok ? kwhForKm / km * 100 : null, kmPerKwh: ok ? km / kwhForKm : null,
+      costPerKm: ok && kwh > 0 ? (cost * (kwhForKm / kwh)) / km : null };
+  }
+  function allMonths() {
+    var set = {};
+    sessions.forEach(function (s) { set[s.date.slice(0, 7)] = 1; });
+    Object.keys(odo).forEach(function (m) { var o = odo[m]; if (o && (isNum(o.start) || isNum(o.end))) set[m] = 1; });
+    return Object.keys(set).sort();
+  }
+  function totalStats() {
+    var kwh = 0, cost = 0, count = 0, dayCount = 0, km = null, kwhKm = 0, all = [];
+    allMonths().forEach(function (m) {
+      var s = monthStats(m); kwh += s.kwh; cost += s.cost; count += s.count; dayCount += s.days; all = all.concat(s.list);
+      if (s.km !== null) { km = (km || 0) + s.km; kwhKm += s.kwh; }
+    });
+    return build('all', all, kwh, cost, dayCount, km, kwhKm);
+  }
+  function stats() { return state.all ? totalStats() : monthStats(state.month); }
+
+  // ---------- shared pieces ----------
+  function monthNav(allChip) {
+    return '<div class="month"><button class="iconbtn" data-act="prev" aria-label="الشهر السابق">' + svg('prev') + '</button>' +
+      '<div class="label">' + (state.all ? 'كل الفترة' : monthLabel(state.month)) + '</div>' +
+      '<button class="iconbtn" data-act="next" aria-label="الشهر التالي">' + svg('next') + '</button></div>' +
+      (allChip ? '<div class="pills"><button class="pill" data-act="all" aria-pressed="' + state.all + '">عرض كل الفترة</button>' +
+        '<button class="pill" data-act="thismonth">الشهر الحالي</button></div>' : '');
+  }
+  function renderTabs() {
+    var T = [['home', 'الرئيسية', 'home'], ['cal', 'التقويم', 'cal'], ['cmp', 'المقارنة', 'chart'], ['set', 'الإعدادات', 'gear']];
+    var el = $('tabs');
+    if (state.tab === 'setup') { el.hidden = true; return; }
+    el.hidden = false;
+    el.innerHTML = '<div class="in">' + T.map(function (t) {
+      return '<button class="tab" data-act="tab" data-t="' + t[0] + '"' + (state.tab === t[0] ? ' aria-current="page"' : '') + '>' + svg(t[2]) + '<span>' + t[1] + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function fab(date) { return '<button class="fab" data-act="add"' + (date ? ' data-d="' + date + '"' : '') + '>' + svg('plus') + 'شحنة جديدة</button>'; }
+
+  // ---------- HOME ----------
+  function sessionCard(s, cur) {
+    var wd = DAYS[parseD(s.date).getDay()];
+    return '<button class="sess" data-act="edit" data-id="' + s.id + '" aria-label="تعديل شحنة ' + s.date + '">' +
+      '<div class="head"><span class="date tn">' + wd + ' ' + s.date + '</span><span class="cost tn">' + fmt(s.cost, 3) + ' ' + cur + '</span></div>' +
+      '<div class="bar" role="img" aria-label="من ' + s.start + '% إلى ' + s.end + '%"><i style="left:' + s.start + '%;width:' + (s.end - s.start) + '%"></i></div>' +
+      '<div class="meta tn"><span>من <b>' + s.start + '%</b> إلى <b>' + s.end + '%</b></span><span><b>' + fmt(s.kwh) + '</b> kWh</span><span>' + fmt(s.price, 3) + ' / kWh</span></div></button>';
+  }
+  function renderHome() {
+    var st = stats(), cur = esc(car.currency);
+    var list = st.list.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id; });
+    var h = '<div class="top"><div><h1>' + esc(car.make + ' ' + car.model) + '</h1><div class="sub tn">البطارية ' + fmt(car.capacity, 1) + ' kWh</div></div>' +
+      '<button class="iconbtn" data-act="exportsheet" aria-label="تصدير النتائج">' + svg('share') + '</button></div>';
+    h += monthNav(true);
+    h += '<div class="hero"><div><div class="cap">الطاقة المشحونة</div><div class="big num tn">' + fmt(st.kwh) + '<small>kWh</small></div></div>' +
+      '<div class="grid"><div><div class="cap">قيمة الشحن</div><div class="mid tn">' + fmt(st.cost, 3) + ' ' + cur + '</div></div>' +
+      '<div><div class="cap">عدد الشحنات</div><div class="mid tn">' + st.count + '</div></div>' +
+      '<div><div class="cap">المسافة المقطوعة</div><div class="mid tn">' + (st.km !== null ? fmt(st.km, 0) + ' كم' : '—') + '</div></div>' +
+      '<div><div class="cap">الاستهلاك</div><div class="mid tn">' + (st.per100 !== null ? fmt(st.per100, 1) + ' <span style="font-size:13px;font-weight:500">kWh/100كم</span>' : '—') + '</div></div></div></div>';
+    if (!state.all) h += odoCard(st);
+    if (!list.length) h += '<div class="empty">لا توجد شحنات في هذه الفترة.<br>اضغط «شحنة جديدة» وسجّل أول شحنة.</div>';
+    list.forEach(function (s) { h += sessionCard(s, cur); });
+    h += fab();
+    return h;
+  }
+  function odoCard(st) {
+    var o = odo[state.month] || {}, prev = odo[shift(state.month, -1)] || {};
+    var bad = isNum(o.start) && isNum(o.end) && o.end < o.start;
+    var res;
+    if (bad) res = '<div class="err">قراءة النهاية أقل من البداية، راجع الأرقام.</div>';
+    else if (st.km !== null) {
+      var cur = esc(car.currency);
+      res = '<div class="result tn"><div>المسافة المقطوعة: <b>' + fmt(st.km, 0) + ' كم</b></div>' +
+        (st.per100 !== null ? '<div>الاستهلاك: <b>' + fmt(st.per100, 1) + ' kWh / 100 كم</b> (' + fmt(st.kmPerKwh, 2) + ' كم لكل kWh)</div>' +
+          (st.costPerKm !== null ? '<div>تكلفة الكيلومتر: <b>' + fmt(st.costPerKm, 3) + ' ' + cur + '</b></div>' : '') :
+          '<div class="sub">سجّل شحنات هذا الشهر لحساب الاستهلاك.</div>') + '</div>';
+    } else res = '<p class="hint">أدخل قراءة بداية الشهر ونهايته (أو القراءة الحالية) لحساب المسافة والاستهلاك.</p>';
+    var fill = (!isNum(o.start) && isNum(prev.end)) ? '<button class="link" data-act="fillstart" data-v="' + prev.end + '">استخدم نهاية الشهر السابق (' + fmt(prev.end, 0) + ')</button>' : '';
+    return '<div class="card"><h3>عداد المسافة لهذا الشهر</h3><div class="row2">' +
+      '<label class="f" for="oStart">قراءة البداية (كم)<input type="number" inputmode="decimal" id="oStart" value="' + (isNum(o.start) ? o.start : '') + '" placeholder="مثال 12500"></label>' +
+      '<label class="f" for="oEnd">قراءة النهاية (كم)<input type="number" inputmode="decimal" id="oEnd" value="' + (isNum(o.end) ? o.end : '') + '" placeholder="مثال 13200"></label></div>' +
+      fill + res + '</div>';
+  }
+
+  // ---------- CALENDAR ----------
+  function renderCal() {
+    var st = monthStats(state.month), p = state.month.split('-'), y = +p[0], mo = +p[1];
+    var first = new Date(y, mo - 1, 1).getDay(), dim = new Date(y, mo, 0).getDate(), t = today();
+    var byDay = {};
+    st.list.forEach(function (s) { (byDay[s.date] = byDay[s.date] || []).push(s); });
+    var dates = Object.keys(byDay).sort(), gap = null;
+    for (var i = 1; i < dates.length; i++) { var g = daysBetween(dates[i - 1], dates[i]); if (gap === null || g > gap) gap = g; }
+    var lastAll = sessions.length ? sessions.map(function (s) { return s.date; }).sort().pop() : null;
+    var since = lastAll && lastAll <= t ? daysBetween(lastAll, t) : null;
+
+    var h = '<div class="top"><div><h1>تقويم الشحن</h1><div class="sub">الأيام المعلّمة هي أيام الشحن</div></div></div>';
+    h += monthNav(false);
+    h += '<div class="stats"><div class="stat"><b class="tn">' + st.days + '</b><span>أيام الشحن من ' + dim + '</span></div>' +
+      '<div class="stat"><b class="tn">' + (gap !== null ? gap : '—') + '</b><span>أطول فترة بين شحنتين (يوم)</span></div>' +
+      '<div class="stat"><b class="tn">' + (since !== null ? since : '—') + '</b><span>منذ آخر شحنة (يوم)</span></div></div>';
+    h += '<div class="card"><div class="cal">' + DAYS_S.map(function (d) { return '<div class="wd">' + d + '</div>'; }).join('');
+    for (var b = 0; b < first; b++) h += '<div class="day blank"></div>';
+    for (var d = 1; d <= dim; d++) {
+      var ds = state.month + '-' + pad(d), arr = byDay[ds], k = 0;
+      if (arr) arr.forEach(function (s) { k += s.kwh; });
+      h += '<button class="day' + (arr ? ' has' : '') + (ds === t ? ' today' : '') + (ds === state.selDay ? ' sel' : '') + '" data-act="day" data-d="' + ds + '" aria-label="' + ds + (arr ? ' يوجد شحن' : '') + '">' +
+        '<span class="dn tn">' + d + '</span>' + (arr ? '<i class="dot"></i><small class="tn">' + fmt(k, 0) + '</small>' : '') + '</button>';
+    }
+    h += '</div></div><div class="legend"><span><i></i>يوم فيه شحن (الرقم = kWh)</span></div>';
+
+    var sd = state.selDay;
+    if (sd && sd.slice(0, 7) === state.month) {
+      var arr2 = byDay[sd] || [];
+      h += '<div class="card"><h3>' + DAYS[parseD(sd).getDay()] + ' ' + sd + '</h3>';
+      if (!arr2.length) h += '<p class="hint">لا توجد شحنة في هذا اليوم.</p>';
+      arr2.forEach(function (s) { h += sessionCard(s, esc(car.currency)); });
+      h += '<button class="btn ghost" data-act="add" data-d="' + sd + '">إضافة شحنة في هذا اليوم</button></div>';
+    } else h += '<p class="hint">اضغط على يوم لعرض شحناته أو إضافة شحنة فيه.</p>';
+    return h;
+  }
+
+  // ---------- COMPARE ----------
+  function metricDefs() {
+    var cur = car.currency;
+    return [
+      { k: 'kwh', label: 'الطاقة المشحونة', unit: 'kWh', f: function (v) { return fmt(v); } },
+      { k: 'cost', label: 'قيمة الشحن', unit: cur, f: function (v) { return fmt(v, 3); }, worse: 'up' },
+      { k: 'count', label: 'عدد الشحنات', unit: '', f: function (v) { return fmt(v, 0); } },
+      { k: 'km', label: 'المسافة المقطوعة', unit: 'كم', f: function (v) { return fmt(v, 0); } },
+      { k: 'per100', label: 'الاستهلاك kWh/100كم', unit: '', f: function (v) { return fmt(v, 1); }, worse: 'up' },
+      { k: 'costPerKm', label: 'تكلفة الكيلومتر', unit: cur, f: function (v) { return fmt(v, 3); }, worse: 'up' }
+    ];
+  }
+  function deltaHtml(a, b, def) {
+    if (!isNum(a) || !isNum(b) || b === 0) return '<span class="delta neu">—</span>';
+    var pc = (a - b) / b * 100;
+    if (Math.abs(pc) < 0.05) return '<span class="delta neu tn">0%</span>';
+    var up = pc > 0, cls = 'neu';
+    if (def.worse === 'up') cls = up ? 'bad' : 'good';
+    return '<span class="delta ' + cls + ' tn">' + (up ? '▲' : '▼') + ' ' + fmt(Math.abs(pc), 1) + '%</span>';
+  }
+  function renderCmp() {
+    var months = allMonths();
+    var h = '<div class="top"><div><h1>مقارنة الأشهر</h1><div class="sub">قارن الاستهلاك بين شهرين أو تابع الاتجاه</div></div></div>';
+    if (months.length < 1) return h + '<div class="empty">سجّل شحنات في شهرين على الأقل لتظهر المقارنة.</div>';
+    var A = months.indexOf(state.cmpA) >= 0 ? state.cmpA : months[months.length - 1];
+    var B = months.indexOf(state.cmpB) >= 0 ? state.cmpB : (months.length > 1 ? months[months.length - 2] : months[0]);
+    state.cmpA = A; state.cmpB = B;
+    var defs = metricDefs(), sa = monthStats(A), sb = monthStats(B);
+    function opts(sel) { return months.slice().reverse().map(function (m) { return '<option value="' + m + '"' + (m === sel ? ' selected' : '') + '>' + monthShort(m) + '</option>'; }).join(''); }
+    h += '<div class="card"><div class="row2"><label class="f" for="cmpA">الشهر الأول<select id="cmpA">' + opts(A) + '</select></label>' +
+      '<label class="f" for="cmpB">الشهر الثاني<select id="cmpB">' + opts(B) + '</select></label></div>' +
+      '<table class="cmp"><thead><tr><th></th><th>' + monthShort(A) + '</th><th>' + monthShort(B) + '</th><th>التغيّر</th></tr></thead><tbody>';
+    defs.forEach(function (d) {
+      var a = sa[d.k], b = sb[d.k];
+      h += '<tr><td class="n">' + d.label + '</td><td class="tn">' + (isNum(a) ? d.f(a) : '—') + '</td><td class="tn">' + (isNum(b) ? d.f(b) : '—') + '</td><td>' + deltaHtml(a, b, d) + '</td></tr>';
+    });
+    h += '</tbody></table><p class="hint">التغيّر = الشهر الأول مقارنة بالثاني. الأخضر أفضل (أقل استهلاكاً أو تكلفة).</p></div>';
+
+    var M = defs.filter(function (d) { return d.k === state.metric; })[0] || defs[0];
+    h += '<div class="card"><h3>الاتجاه الشهري</h3><div class="scroll">' + defs.map(function (d) {
+      return '<button class="pill' + (d.k === M.k ? ' on' : '') + '" data-act="metric" data-k="' + d.k + '">' + d.label + '</button>';
+    }).join('') + '</div><div class="trend">';
+    var shown = months.slice(-12), vals = shown.map(function (m) { return monthStats(m); });
+    var mx = 0; vals.forEach(function (s) { if (isNum(s[M.k]) && s[M.k] > mx) mx = s[M.k]; });
+    for (var i = shown.length - 1; i >= 0; i--) {
+      var s = vals[i], v = s[M.k], prev = i > 0 ? vals[i - 1][M.k] : null;
+      h += '<div class="tr' + (shown[i] === A ? ' cur' : '') + '"><span>' + monthShort(shown[i]) + '</span>' +
+        '<div class="track"><i style="width:' + (isNum(v) && mx > 0 ? Math.max(3, v / mx * 100) : 0) + '%"></i></div>' +
+        '<span class="val tn"><div>' + (isNum(v) ? M.f(v) + (M.unit ? ' ' + esc(M.unit) : '') : '—') + '</div>' + deltaHtml(v, prev, M) + '</span></div>';
+    }
+    h += '</div></div>';
+    return h;
+  }
+
+  // ---------- SETTINGS / SETUP ----------
+  function carForm(c, first) {
+    var chips = PRESETS.map(function (p, i) { return '<button class="pill" data-act="preset" data-i="' + i + '">' + esc(p[0] + ' ' + p[1]) + '</button>'; }).join('');
+    return '<div class="card"><h3>' + (first ? 'بيانات السيارة' : 'السيارة') + '</h3><div class="hint">اختيار سريع</div><div class="scroll">' + chips + '</div>' +
+      '<label class="f" for="cMake">نوع السيارة<input type="text" id="cMake" value="' + esc(c.make) + '"></label>' +
+      '<label class="f" for="cModel">الموديل<input type="text" id="cModel" value="' + esc(c.model) + '"></label>' +
+      '<label class="f" for="cCap">سعة البطارية الإجمالية (kWh)<input type="text" inputmode="decimal" id="cCap" value="' + c.capacity + '"></label>' +
+      '<div class="row2"><label class="f" for="cPrice">سعر الكيلوواط الافتراضي<input type="text" inputmode="decimal" id="cPrice" value="' + c.price + '"></label>' +
+      '<label class="f" for="cCur">العملة<input type="text" id="cCur" value="' + esc(c.currency) + '"></label></div>' +
+      '<div class="err" id="cErr"></div><button class="btn" data-act="savecar">' + (first ? 'حفظ ومتابعة' : 'حفظ التعديلات') + '</button></div>';
+  }
+  function renderSetup() {
+    var c = { make: 'BYD', model: 'Atto 3', capacity: 60.5, price: 0.1, currency: 'د.أ' };
+    return '<div class="top"><h1>أهلاً بك</h1></div><p class="hint">حدد سيارتك وسعة البطارية، وسنحسب كل شحنة منها. القيم الحالية مثال، عدّلها لتناسب سيارتك.</p>' +
+      carForm(c, true) +
+      '<div class="card"><h3>تريد أن تجرّب أولاً؟</h3><p class="hint">يحمّل بيانات تجريبية لثلاثة أشهر لتشاهد التقويم والمقارنة. يمكنك مسحها من الإعدادات.</p>' +
+      '<button class="btn ghost" data-act="demo">تجربة ببيانات تجريبية</button></div>';
+  }
+  function renderSet() {
+    var h = '<div class="top"><h1>الإعدادات</h1></div>' + carForm(car, false);
+    h += '<div class="card"><h3>المظهر</h3><div class="seg">' + [['auto', 'تلقائي'], ['light', 'فاتح'], ['dark', 'داكن']].map(function (t) {
+      return '<button data-act="theme" data-v="' + t[0] + '" aria-pressed="' + (settings.theme === t[0]) + '">' + t[1] + '</button>';
+    }).join('') + '</div><div class="hint">لون التطبيق</div><div class="swatches">' + HUES.map(function (x) {
+      return '<button class="sw" data-act="hue" data-v="' + x[0] + '" aria-label="' + x[1] + '" aria-pressed="' + (settings.hue === x[0]) + '" style="background:hsl(' + x[0] + ' 78% 45%)"></button>';
+    }).join('') + '</div></div>';
+    h += '<div class="card"><h3>بياناتك</h3><p class="hint">البيانات محفوظة على هذا الجهاز أو المتصفح فقط. احفظ نسخة احتياطية لنقلها بين التطبيق والرابط أو لاستعادتها.</p>' +
+      '<button class="btn ghost" data-act="backup">حفظ نسخة احتياطية</button>' +
+      '<label class="btn ghost" for="restoreFile" style="cursor:pointer">استعادة من نسخة احتياطية</label><input type="file" id="restoreFile" accept=".json,application/json" hidden>' +
+      '<button class="btn danger" id="wipeBtn" data-act="wipe">مسح كل البيانات</button></div>';
+    return h;
+  }
+
+  function render() {
+    applySettings();
+    var h;
+    if (state.tab === 'setup') h = renderSetup();
+    else if (state.tab === 'home') h = renderHome();
+    else if (state.tab === 'cal') h = renderCal();
+    else if (state.tab === 'cmp') h = renderCmp();
+    else h = renderSet();
+    $('app').innerHTML = h;
+    renderTabs();
+  }
+
+  // ---------- add / edit sheet ----------
+  function openSheet(s, date) {
+    state.sheet = { id: s ? s.id : null, cap: s && s.cap ? s.cap : car.capacity, armed: false };
+    $('layer').innerHTML = '<div class="scrim" data-act="closesheet"><div class="sheet" role="dialog" aria-label="' + (s ? 'تعديل الشحنة' : 'شحنة جديدة') + '">' +
+      '<h2>' + (s ? 'تعديل الشحنة' : 'شحنة جديدة') + '</h2>' +
+      '<label class="f" for="aDate">التاريخ<input type="date" id="aDate" value="' + (s ? s.date : (date || today())) + '"></label>' +
+      '<div class="row2"><label class="f" for="aStart">قبل الشحن %<input type="number" inputmode="numeric" min="0" max="99" id="aStart" placeholder="20" value="' + (s ? s.start : '') + '"></label>' +
+      '<label class="f" for="aEnd">بعد الشحن %<input type="number" inputmode="numeric" min="1" max="100" id="aEnd" placeholder="80" value="' + (s ? s.end : '') + '"></label></div>' +
+      '<label class="f" for="aPrice">سعر الكيلوواط (' + esc(car.currency) + ')<input type="text" inputmode="decimal" id="aPrice" value="' + (s ? s.price : car.price) + '"></label>' +
+      '<div id="aPrev"></div><div class="err" id="aErr"></div>' +
+      '<button class="btn" id="aSave" data-act="savesheet" disabled>حفظ</button>' +
+      (s ? '<button class="btn danger" id="aDel" data-act="delsheet">حذف الشحنة</button>' : '') +
+      '<button class="btn ghost" data-act="closesheet2">إلغاء</button></div></div>';
+    calc();
+    if (!s) $('aStart').focus();
+  }
+  function calc() {
+    var s = num($('aStart').value), e = num($('aEnd').value), p = num($('aPrice').value), cap = state.sheet.cap;
+    var ok = s !== null && e !== null && p !== null && s >= 0 && s <= 99 && e >= 1 && e <= 100 && e > s && s === Math.floor(s) && e === Math.floor(e) && p >= 0 && !!$('aDate').value;
+    var kwh = ok ? (e - s) / 100 * cap : 0, cost = ok ? kwh * p : 0;
+    $('aSave').disabled = !ok;
+    $('aErr').textContent = (!ok && $('aStart').value !== '' && $('aEnd').value !== '') ? 'نسبة النهاية يجب أن تكون أكبر من البداية (0 إلى 100).' : '';
+    $('aPrev').innerHTML = ok ? '<div class="preview tn"><span>الطاقة<br><b>' + fmt(kwh) + ' kWh</b></span><span>القيمة<br><b>' + fmt(cost, 3) + ' ' + esc(car.currency) + '</b></span></div>' : '';
+    return ok ? { s: s, e: e, p: p, kwh: kwh, cost: cost, cap: cap } : null;
+  }
+
+  // ---------- export / backup ----------
+  async function offerFile(filename, data, okMsg) {
+    if (window.AndroidBridge && window.AndroidBridge.saveFile) { try { window.AndroidBridge.saveFile(filename, data); return; } catch (e) {} }
+    var dl = null;
+    try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) {}
+    if (dl) {
+      try { await dl.save({ filename: filename, data: data }); toast(okMsg); return; }
+      catch (e) { if (e && e.code === 'declined') return; }
+    }
+    try { await navigator.clipboard.writeText(data); toast('تعذر الحفظ كملف، تم نسخ المحتوى'); }
+    catch (e) { toast('التصدير غير متاح في هذا العرض'); }
+  }
+  function csvSessions() {
+    var st = stats(); if (!st.list.length) { toast('لا توجد شحنات لتصديرها'); return; }
+    var cur = car.currency, kwh = 0, cost = 0;
+    var rows = ['التاريخ,السيارة,نسبة البداية %,نسبة النهاية %,الطاقة (kWh),سعر الكيلوواط (' + cur + '),التكلفة (' + cur + ')'];
+    st.list.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).forEach(function (s) {
+      kwh += s.kwh; cost += s.cost;
+      rows.push([s.date, (car.make + ' ' + car.model).replace(/,/g, ' '), s.start, s.end, s.kwh.toFixed(2), s.price.toFixed(3), s.cost.toFixed(3)].join(','));
+    });
+    rows.push('الإجمالي,,,,' + kwh.toFixed(2) + ',,' + cost.toFixed(3), 'عدد الشحنات,' + st.list.length);
+    offerFile('ev_charges_' + (state.all ? 'all' : state.month) + '.csv', '﻿' + rows.join('\n'), 'تم تجهيز ملف CSV');
+  }
+  function csvMonths() {
+    var ms = allMonths(); if (!ms.length) { toast('لا توجد بيانات لتصديرها'); return; }
+    var rows = ['الشهر,عدد الشحنات,أيام الشحن,الطاقة (kWh),القيمة (' + car.currency + '),عداد البداية,عداد النهاية,المسافة (كم),kWh لكل 100 كم,تكلفة الكيلومتر'];
+    ms.forEach(function (m) {
+      var s = monthStats(m), o = odo[m] || {};
+      rows.push([m, s.count, s.days, s.kwh.toFixed(2), s.cost.toFixed(3), isNum(o.start) ? o.start : '', isNum(o.end) ? o.end : '',
+        s.km !== null ? s.km : '', s.per100 !== null ? s.per100.toFixed(1) : '', s.costPerKm !== null ? s.costPerKm.toFixed(3) : ''].join(','));
+    });
+    offerFile('ev_monthly_summary.csv', '﻿' + rows.join('\n'), 'تم تجهيز الملخص الشهري');
+  }
+
+  // ---------- demo data ----------
+  function demo() {
+    car = { make: 'BYD', model: 'Atto 3', capacity: 60.5, price: 0.1, currency: 'د.أ' };
+    sessions = []; odo = {};
+    var seed = 7; function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    var t = new Date(), id = 1000, odom = 18400;
+    for (var back = 2; back >= 0; back--) {
+      var base = new Date(t.getFullYear(), t.getMonth() - back, 1), m = ym(base);
+      var dim = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
+      var last = back === 0 ? Math.min(t.getDate(), dim) : dim;
+      odo[m] = { start: odom };
+      for (var d = 2 + Math.floor(rnd() * 2); d <= last; d += 3 + Math.floor(rnd() * 3)) {
+        var s = 25 + Math.floor(rnd() * 25), e = Math.min(100, s + 18 + Math.floor(rnd() * 27)), price = rnd() > .6 ? 0.07 : 0.1;
+        var kwh = (e - s) / 100 * car.capacity;
+        sessions.push({ id: id++, date: m + '-' + pad(d), start: s, end: e, kwh: kwh, price: price, cost: kwh * price, cap: car.capacity });
+      }
+      var mk = 0; sessions.forEach(function (x) { if (x.date.slice(0, 7) === m) mk += x.kwh; });
+      odom = Math.round(odom + mk / (0.13 + rnd() * 0.05) * 1);
+      odo[m].end = odom;
+    }
+    save(KEYS.car, car); save(KEYS.s, sessions); save(KEYS.odo, odo);
+    state.tab = 'home'; state.month = ym(t); state.all = false; render(); toast('تم تحميل بيانات تجريبية');
+  }
+
+  // ---------- events ----------
+  document.addEventListener('click', function (ev) {
+    var el = ev.target.closest('[data-act]'); if (!el) return;
+    var act = el.getAttribute('data-act');
+    if (act === 'closesheet') { if (ev.target === el) { $('layer').innerHTML = ''; state.sheet = null; } return; }
+    switch (act) {
+      case 'closesheet2': $('layer').innerHTML = ''; state.sheet = null; break;
+      case 'tab': state.tab = el.getAttribute('data-t'); window.scrollTo(0, 0); render(); break;
+      case 'prev': state.month = shift(state.month, -1); state.all = false; render(); break;
+      case 'next': state.month = shift(state.month, 1); state.all = false; render(); break;
+      case 'all': state.all = !state.all; render(); break;
+      case 'thismonth': state.month = ym(new Date()); state.all = false; render(); break;
+      case 'add': openSheet(null, el.getAttribute('data-d') || (state.tab === 'cal' ? state.selDay : null)); break;
+      case 'edit':
+        var sid = +el.getAttribute('data-id');
+        var found = sessions.filter(function (s) { return s.id === sid; })[0];
+        if (found) openSheet(found); break;
+      case 'savesheet':
+        var r = calc(); if (!r) break;
+        var date = $('aDate').value, rec = { id: state.sheet.id || Date.now(), date: date, start: r.s, end: r.e, kwh: r.kwh, price: r.p, cost: r.cost, cap: r.cap };
+        if (state.sheet.id) sessions = sessions.map(function (s) { return s.id === rec.id ? rec : s; }); else sessions.push(rec);
+        save(KEYS.s, sessions);
+        var wasEdit = !!state.sheet.id;
+        state.month = date.slice(0, 7); state.selDay = date; if (state.tab === 'home') state.all = false;
+        $('layer').innerHTML = ''; state.sheet = null; render(); toast(wasEdit ? 'تم تعديل الشحنة' : 'تمت إضافة الشحنة'); break;
+      case 'delsheet':
+        if (!state.sheet.armed) { state.sheet.armed = true; el.textContent = 'اضغط مرة أخرى للتأكيد'; break; }
+        var did = state.sheet.id; sessions = sessions.filter(function (s) { return s.id !== did; }); save(KEYS.s, sessions);
+        $('layer').innerHTML = ''; state.sheet = null; render(); toast('تم حذف الشحنة'); break;
+      case 'day': state.selDay = el.getAttribute('data-d'); render(); break;
+      case 'metric': state.metric = el.getAttribute('data-k'); render(); break;
+      case 'fillstart':
+        odo[state.month] = Object.assign({}, odo[state.month], { start: +el.getAttribute('data-v') });
+        save(KEYS.odo, odo); render(); break;
+      case 'exportsheet':
+        $('layer').innerHTML = '<div class="scrim" data-act="closesheet"><div class="sheet" role="dialog" aria-label="تصدير"><h2>تصدير النتائج</h2>' +
+          '<p class="hint">تصدير الشحنات يشمل ' + (state.all ? 'كل الفترة' : monthLabel(state.month)) + '. الملف يفتح في Excel وGoogle Sheets.</p>' +
+          '<button class="btn" data-act="csv1">الشحنات (CSV)</button><button class="btn" data-act="csv2">الملخص الشهري مع العداد (CSV)</button>' +
+          '<button class="btn ghost" data-act="closesheet2">إغلاق</button></div></div>'; break;
+      case 'csv1': $('layer').innerHTML = ''; csvSessions(); break;
+      case 'csv2': $('layer').innerHTML = ''; csvMonths(); break;
+      case 'preset':
+        var p = PRESETS[+el.getAttribute('data-i')];
+        $('cMake').value = p[0]; $('cModel').value = p[1]; $('cCap').value = p[2]; break;
+      case 'savecar':
+        var make = $('cMake').value.trim(), model = $('cModel').value.trim(), cap = num($('cCap').value), price = num($('cPrice').value), cur = $('cCur').value.trim();
+        if (!make || !model || !cap || cap <= 0 || price === null || price < 0 || !cur) { $('cErr').textContent = 'أكمل كل الحقول، وتأكد أن السعة أكبر من صفر.'; break; }
+        var first = state.tab === 'setup';
+        car = { make: make, model: model, capacity: cap, price: price, currency: cur };
+        save(KEYS.car, car); if (first) state.tab = 'home'; render(); toast('تم حفظ بيانات السيارة'); break;
+      case 'theme': settings.theme = el.getAttribute('data-v'); save(KEYS.set, settings); render(); break;
+      case 'hue': settings.hue = +el.getAttribute('data-v'); save(KEYS.set, settings); render(); break;
+      case 'demo': demo(); break;
+      case 'backup': offerFile('ev_backup.json', JSON.stringify({ car: car, sessions: sessions, odo: odo }), 'تم تجهيز النسخة الاحتياطية'); break;
+      case 'wipe':
+        if (el.getAttribute('data-armed') !== '1') { el.setAttribute('data-armed', '1'); el.textContent = 'اضغط مرة أخرى لمسح كل شيء'; break; }
+        car = null; sessions = []; odo = {};
+        save(KEYS.car, null); save(KEYS.s, []); save(KEYS.odo, {});
+        try { localStorage.removeItem(KEYS.car); } catch (e) {}
+        state.tab = 'setup'; render(); break;
+    }
+  });
+  document.addEventListener('input', function (ev) {
+    if (state.sheet && (ev.target.id === 'aStart' || ev.target.id === 'aEnd' || ev.target.id === 'aPrice' || ev.target.id === 'aDate')) calc();
+  });
+  document.addEventListener('change', function (ev) {
+    var id = ev.target.id;
+    if (id === 'oStart' || id === 'oEnd') {
+      var v = num(ev.target.value), o = Object.assign({}, odo[state.month]);
+      var key = id === 'oStart' ? 'start' : 'end';
+      if (v === null || v < 0) delete o[key]; else o[key] = v;
+      if (isNum(o.start) || isNum(o.end)) odo[state.month] = o; else delete odo[state.month];
+      save(KEYS.odo, odo); render(); return;
+    }
+    if (id === 'cmpA') { state.cmpA = ev.target.value; render(); return; }
+    if (id === 'cmpB') { state.cmpB = ev.target.value; render(); return; }
+    if (id === 'restoreFile') {
+      var f = ev.target.files && ev.target.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () {
+        try {
+          var d = JSON.parse(rd.result);
+          if (!d || !d.car || !Array.isArray(d.sessions)) throw new Error('bad');
+          car = d.car; sessions = d.sessions; odo = d.odo || {};
+          save(KEYS.car, car); save(KEYS.s, sessions); save(KEYS.odo, odo);
+          state.tab = 'home'; render(); toast('تمت الاستعادة');
+        } catch (e) { toast('الملف غير صالح'); }
+      };
+      rd.readAsText(f);
+    }
+  });
+
+  render();
+})();
+</script>
+
+</html>
